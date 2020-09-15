@@ -224,7 +224,12 @@
             if (tokenType == JsonTokenType.String)
             {
                 var valueString = reader.GetString();
-                if (targetType.GetTypeInfo().IsPrimitive)
+                if (targetType == typeof(string))
+                {
+                    success = true;
+                    result = valueString;
+                }
+                else if (targetType.GetTypeInfo().IsPrimitive)
                 {
                     if (targetType == typeof(int))
                     {
@@ -352,7 +357,7 @@
             }
             else if (tokenType == JsonTokenType.Number)
             {
-                if (targetType == typeof(short) || targetType == typeof(int) || targetType == typeof(long) || targetType == typeof(float) || targetType == typeof(double))
+                if (targetType == typeof(short) || targetType == typeof(int) || targetType == typeof(long) || targetType == typeof(float) || targetType == typeof(double) || targetType == typeof(decimal))
                 {
                     result = Convert.ChangeType(reader.GetDecimal(), targetType, CultureInfo.InvariantCulture);
                     success = true;
