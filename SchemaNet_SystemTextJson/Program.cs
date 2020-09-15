@@ -1,16 +1,19 @@
-﻿using Schema.NET;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Schema.NET;
 using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace SchemaNet_SystemTextJson
 {
 	public class CustomType : Thing, IThing
 	{
+		[JsonPropertyName("@type")]
 		public override string Type => "CustomType";
 
-		[JsonPropertyName("name")]
+		[JsonPropertyName("number")]
 		[JsonConverter(typeof(ValuesJsonConverter))]
-		public OneOrMany<string> Name { get; set; }
+		public OneOrMany<int?> Number { get; set; }
 
 		[JsonPropertyName("uri")]
 		[JsonConverter(typeof(ValuesJsonConverter))]
@@ -21,15 +24,23 @@ namespace SchemaNet_SystemTextJson
 	{
 		static void Main(string[] args)
 		{
-			// {"@context":"https://schema.org","@type":"CustomType","Name":"Hello World"}
+			var serializerOptions = new JsonSerializerOptions
+			{
+				DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+				Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+			};
+			serializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+
+			var rawJson = @"{""@type"":""CustomType"",""number"":123,""@context"":""https://schema.org""}";
 			var inputObj = new CustomType
 			{
-				Name = "Hello World"
+				Number = 123
 			};
 
-			var json = SchemaSerializer.SerializeObject(inputObj);
+			var result = JsonSerializer.Serialize(inputObj, serializerOptions);
 
-			var outputObj = SchemaSerializer.DeserializeObject<CustomType>(json);
+			Assert.AreEqual(rawJson, result);
 		}
 	}
 }
